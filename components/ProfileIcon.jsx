@@ -1,10 +1,15 @@
 "use client";
 
 import { signIn, useSession, signOut } from "next-auth/react";
-import Image from "next/image";
 
 export default function ProfileIcon() {
   const { data: session, status } = useSession();
+
+  console.log(session);
+
+  if (status === "loading") {
+    return null;
+  }
 
   if (status === "authenticated") {
     return (

@@ -17,6 +17,14 @@ export default function LoginButton() {
       >
         Sign in with Github
       </button>
+
+      <button
+        onClick={() => signIn("google")}
+        className="mt-4 bg-slate-800 text-white px-6 py-3 rounded-lg"
+      >
+        Sign in with google
+      </button>
+
     </div>
   );
 }

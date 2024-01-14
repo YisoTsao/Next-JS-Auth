@@ -15,6 +15,11 @@ model User {
   name      String
   email     String   @unique
   role      String
+  age       Int
+  avatar    String
+  team      String
+  status    String
+  actions   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -17,12 +17,18 @@ import {
   Chip,
   User,
   Pagination,
+  Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
 import { VerticalDotsIcon } from "./VerticalDotsIcon";
 import { SearchIcon } from "./SearchIcon";
 import { ChevronDownIcon } from "./ChevronDownIcon";
+import { EditIcon } from "./EditIcon";
+import { DeleteIcon } from "./DeleteIcon";
+import { EyeIcon } from "./EyeIcon";
 import { columns, statusOptions } from "./data";
 import BaseModal from "../../components/Modal";
+import CustomModal from "../../components/Modal/CustomModal";
 
 const statusColorMap = {
   active: "success",
@@ -37,6 +43,7 @@ function capitalize(str) {
 }
 
 export default function Users() {
+  const { onOpen, isOpen, onClose, onOpenChange } = useDisclosure();
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState(
@@ -50,6 +57,7 @@ export default function Users() {
   });
   const [page, setPage] = React.useState(1);
   const [users, setUsers] = React.useState([]);
+  const [selectedUser, setSelectedUser] = React.useState(null);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -137,21 +145,60 @@ export default function Users() {
         );
       case "actions":
         return (
-          <div className="relative flex justify-end items-center gap-2">
-            <Dropdown className="bg-background border-1 border-default-200">
-              <DropdownTrigger>
-                <Button isIconOnly radius="full" size="sm" variant="light">
-                  <VerticalDotsIcon className="text-default-400" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem>View</DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+          <div className="relative flex items-center gap-2">
+            <Button
+              isIconOnly
+              radius="full"
+              size="sm"
+              variant="light"
+              onClick={() => alert(11)}
+            >
+              <Tooltip content="Details">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <EyeIcon />
+                </span>
+              </Tooltip>
+            </Button>
+
+            <Button
+              isIconOnly
+              radius="full"
+              size="sm"
+              variant="light"
+              onClick={() => {
+                setSelectedUser(user);
+                onOpen();
+              }}
+            >
+              <Tooltip content="Edit user">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <EditIcon />
+                </span>
+              </Tooltip>
+            </Button>
+            <CustomModal
+              id={user?.id}
+              onClose={onClose}
+              fetchUser={fetchUser}
+            />
           </div>
         );
+      // return (
+      //   <div className="relative flex justify-end items-center gap-2">
+      //     <Dropdown className="bg-background border-1 border-default-200">
+      //       <DropdownTrigger>
+      //         <Button isIconOnly radius="full" size="sm" variant="light">
+      //           <VerticalDotsIcon className="text-default-400" />
+      //         </Button>
+      //       </DropdownTrigger>
+      //       <DropdownMenu>
+      //         <DropdownItem>View</DropdownItem>
+      //         <DropdownItem>Edit</DropdownItem>
+      //         <DropdownItem>Delete</DropdownItem>
+      //       </DropdownMenu>
+      //     </Dropdown>
+      //   </div>
+      // );
       default:
         return cellValue;
     }
@@ -181,7 +228,6 @@ export default function Users() {
       .then((response) => response.json())
       .then((result) => {
         setUsers(result);
-        console.log(result);
       })
       .catch((error) => console.log("error", error));
   };
@@ -255,7 +301,10 @@ export default function Users() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <BaseModal fetchUser={fetchUser} />
+
+            <Button onPress={onOpen} color="primary">
+              Add New
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -336,46 +385,57 @@ export default function Users() {
   }, []);
 
   return (
-    <Table
-      isCompact
-      removeWrapper
-      aria-label="Example table with custom cells, pagination and sorting"
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      checkboxesProps={{
-        classNames: {
-          wrapper: "after:bg-foreground after:text-background text-background",
-        },
-      }}
-      classNames={classNames}
-      selectedKeys={selectedKeys}
-      selectionMode="multiple"
-      sortDescriptor={sortDescriptor}
-      topContent={topContent}
-      topContentPlacement="outside"
-      onSelectionChange={setSelectedKeys}
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={headerColumns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-            allowsSorting={column.sortable}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent={"No users found"} items={sortedItems}>
-        {(item) => (
-          <TableRow key={item.id}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey)}</TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table
+        isCompact
+        removeWrapper
+        aria-label="Example table with custom cells, pagination and sorting"
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        checkboxesProps={{
+          classNames: {
+            wrapper:
+              "after:bg-foreground after:text-background text-background",
+          },
+        }}
+        classNames={classNames}
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+              allowsSorting={column.sortable}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"No users found"} items={sortedItems}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        fetchUser={fetchUser}
+        onOpenChange={onOpenChange}
+        selectedUser={selectedUser}
+        setSelectedUser={setSelectedUser}
+      />
+    </>
   );
 }

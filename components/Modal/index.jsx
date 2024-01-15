@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Modal,
   ModalContent,
@@ -14,9 +14,31 @@ import {
 import { MailIcon } from "./MailIcon.jsx";
 import { LockIcon } from "./LockIcon.jsx";
 
-export default function BaseModal({ fetchUser }) {
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+export default function BaseModal({
+  fetchUser,
+  selectedUser,
+  isOpen,
+  onClose,
+  onOpenChange,
+  setSelectedUser,
+}) {
   const [formData, setFormData] = useState({});
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const userMemo = useMemo(() => selectedUser, [selectedUser]);
+
+  useEffect(() => {
+    console.log(selectedUser);
+    // 如果 selectedUser 存在，則設置為修改模式
+    if (selectedUser) {
+      setIsEditMode(true);
+      setFormData(selectedUser);
+    } else {
+      // 否則設置為新增模式
+      setIsEditMode(false);
+      setFormData({});
+    }
+  }, [selectedUser]);
 
   const handleChange = (name, value) => {
     console.log(name, value);
@@ -28,8 +50,40 @@ export default function BaseModal({ fetchUser }) {
   };
 
   const handleSubmit = () => {
-    console.log("formData:", formData);
-    newUser(formData);
+    if (isEditMode) {
+      // 如果是修改模式，執行修改用戶的邏輯
+      updateUser(formData);
+    } else {
+      // 如果是新增模式，執行新增用戶的邏輯
+      newUser(formData);
+    }
+  };
+
+  const updateUser = (data) => {
+    // 實現修改用戶的邏輯，類似於 newUser 的邏輯
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify({
+      ...data,
+    });
+
+    var requestOptions = {
+      method: "PATCH",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch(`/api/users/${data?.id}`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setSelectedUser(null);
+        onClose();
+        fetchUser();
+      })
+      .catch((error) => console.log("error", error));
   };
 
   const newUser = (data) => {
@@ -68,9 +122,6 @@ export default function BaseModal({ fetchUser }) {
 
   return (
     <>
-      <Button onPress={onOpen} color="primary">
-        Add New
-      </Button>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
         <ModalContent>
           {(onClose) => (
@@ -86,6 +137,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your name"
                   variant="bordered"
                   onChange={(e) => handleChange("name", e.target.value)}
+                  defaultValue={selectedUser?.name}
                 />
                 <Input
                   autoFocus
@@ -96,6 +148,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your email"
                   variant="bordered"
                   onChange={(e) => handleChange("email", e.target.value)}
+                  defaultValue={selectedUser?.email}
                 />
 
                 <Input
@@ -107,6 +160,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your role"
                   variant="bordered"
                   onChange={(e) => handleChange("role", e.target.value)}
+                  defaultValue={selectedUser?.role}
                 />
 
                 <Input
@@ -118,6 +172,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your age"
                   variant="bordered"
                   onChange={(e) => handleChange("age", e.target.value)}
+                  defaultValue={selectedUser?.age}
                 />
 
                 <Input
@@ -129,6 +184,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your avatar"
                   variant="bordered"
                   onChange={(e) => handleChange("avatar", "")}
+                  defaultValue={selectedUser?.avatar}
                 />
                 <Input
                   autoFocus
@@ -139,6 +195,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your team"
                   variant="bordered"
                   onChange={(e) => handleChange("team", e.target.value)}
+                  defaultValue={selectedUser?.team}
                 />
 
                 <Input
@@ -150,6 +207,7 @@ export default function BaseModal({ fetchUser }) {
                   placeholder="Enter your status"
                   variant="bordered"
                   onChange={(e) => handleChange("status", "active")}
+                  defaultValue={selectedUser?.status}
                 />
               </ModalBody>
               <ModalFooter>
@@ -157,7 +215,7 @@ export default function BaseModal({ fetchUser }) {
                   關閉
                 </Button>
                 <Button color="primary" onPress={handleSubmit}>
-                  建立
+                  {isEditMode ? "Save Changes" : "Create"}
                 </Button>
               </ModalFooter>
             </>

@@ -3,9 +3,13 @@ import Header from "@/components/Header";
 
 export default async function Home() {
   let users = await prisma.user.findMany();
+
+  const data = await getUsers();
+
   return (
     <main style={{ maxWidth: 1200, marginInline: "auto", padding: 20 }}>
       <Header />
+      {data[1].name}
       <div
         style={{
           display: "grid",
@@ -29,4 +33,17 @@ export default async function Home() {
       </div>
     </main>
   );
+}
+
+async function getUsers() {
+  // Always cache the data
+  const response = await fetch("http://localhost:3000/api/users", {
+    cache: "no-store", // SSG，如果要用 SSR 則是設定 cache: 'no-store'
+  });
+
+  if (!response.ok) throw Error;
+
+  const data = await response.json();
+
+  return data;
 }

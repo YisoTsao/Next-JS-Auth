@@ -60,6 +60,20 @@ export default function LoginButton() {
       >
         Sign in with google
       </button>
+
+      <button
+        onClick={() => signIn("facebook")}
+        className="mt-4 bg-slate-800 text-white px-6 py-3 rounded-lg"
+      >
+        Sign in with facebook
+      </button>
+
+      <button
+        onClick={() => signIn("apple")}
+        className="mt-4 bg-slate-800 text-white px-6 py-3 rounded-lg"
+      >
+        Sign in with apple
+      </button>
     </div>
   );
 }

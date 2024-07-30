@@ -10,10 +10,13 @@ async function main() {
       name: "Admin",
       email: "admin@admin.com",
       role: "admin",
+      age: 20,
+      avatar: "",
+      team: "",
+      status: "",
+      actions: "",
     },
   });
-
-  console.log({ user });
 }
 
 main()
